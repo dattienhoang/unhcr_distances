@@ -27,5 +27,21 @@ def haversine(lon1, lat1, lon2, lat2):
   return dist
 
 df = pd.read_csv('')
+df = df.rename(index=str, columns={'Country / territory of asylum/residence':'Destination'})
+df['Destination'] = map(lambda x: x.upper(), df['Destination'])
+df['Origin']      = map(lambda x: x.upper(), df['Origin'])
+
+countries = pd.read_csv('')
+countries['Destination'] = countries['name']
+countries['Origin']      = countries['name']
+countries['Destination'] = map(lambda x: x.upper(), countries['Destination'])
+countries['Origin']      = map(lambda x: x.upper(), countries['Origin'])
+countries = df.drop('country', axis=1)
+countries = df.drop('name', axis=1)
+ 
+df = df.join(countries, on='Destination', lsuffix='_UNHCR_d', rsuffix='_countries_d')
+df = df.rename(index=str, columns={'latitude':'latitude_d', 'longitude':'longitude_d'})
+df = df.join(countries, on='Origin', lsuffix='_UNHCR_o', rsuffix='_countries_o')
+df = df.rename(index=str, columns={'latitude':'latitude_o', 'longitude':'longitude_o'})
 
 sns.violinplot(x='year', y='country', hue='dist', data=df, palette="Set3", bw=.2, cut=1, linewidth=1)
