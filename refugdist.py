@@ -28,20 +28,27 @@ def haversine(lon1, lat1, lon2, lat2):
 
 df = pd.read_csv('')
 df = df.rename(index=str, columns={'Country / territory of asylum/residence':'Destination'})
+# make all the words uppercase for ease
 df['Destination'] = map(lambda x: x.upper(), df['Destination'])
 df['Origin']      = map(lambda x: x.upper(), df['Origin'])
 
 countries = pd.read_csv('')
-countries['Destination'] = countries['name']
-countries['Origin']      = countries['name']
-countries['Destination'] = map(lambda x: x.upper(), countries['Destination'])
-countries['Origin']      = map(lambda x: x.upper(), countries['Origin'])
-countries = df.drop('country', axis=1)
-countries = df.drop('name', axis=1)
- 
-df = df.join(countries, on='Destination', lsuffix='_UNHCR_d', rsuffix='_countries_d')
+#countries['Destination'] = countries['name']
+#countries['Origin']      = countries['name']
+#countries['Destination'] = map(lambda x: x.upper(), countries['Destination'])
+#countries['Origin']      = map(lambda x: x.upper(), countries['Origin'])
+#countries = df.drop('country', axis=1)
+#countries = df.drop('name', axis=1)
+countries['name'] = map(lambda x: x.upper(), countries['name'])
+
+# do some joins...left joins
+df = df.merge(countries, how='left', left_on='Destination', right_on='name', suffixes=['_UNHCR_d', '_countries_d'])
 df = df.rename(index=str, columns={'latitude':'latitude_d', 'longitude':'longitude_d'})
-df = df.join(countries, on='Origin', lsuffix='_UNHCR_o', rsuffix='_countries_o')
+df = df.merge(countries, , how='left', left_on='Origin', right_on='name', suffixes=['_UNHCR_o', '_countries_o'])
 df = df.rename(index=str, columns={'latitude':'latitude_o', 'longitude':'longitude_o'})
 
+# next...calculate the distances between the countries!
+df['distance'] = haversine(longitude_d, latitude_d, longitude_o, latitude_o)
+
+# make a violinplot, plotting by origin
 sns.violinplot(x='year', y='country', hue='dist', data=df, palette="Set3", bw=.2, cut=1, linewidth=1)
