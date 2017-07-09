@@ -53,9 +53,16 @@ df = df.merge(countries, how='left', left_on='Origin', right_on='name', suffixes
 df = df.rename(index=str, columns={'latitude':'latitude_o', 'longitude':'longitude_o'})
 
 # next...calculate the distances between the countries!
-df['distance'] = ''
-for i in range(len(df['distance'])):
-    df['distance'][i] = haversine(df['longitude_d'][i], df['latitude_d'][i], df['longitude_o'][i], df['latitude_o'][i])
+#df['distance'] = ''
+#for i in range(len(df['distance'])):
+#    df['distance'][i] = haversine(df['longitude_d'][i], df['latitude_d'][i], df['longitude_o'][i], df['latitude_o'][i])
+
+#df = df.fillna(value=0.)
+#df['distance'] = df.apply(lambda row: haversine(df['longitude_d'][row], df['latitude_d'][row], df['longitude_o'][row], df['latitude_o'][row]),axis=1)
+
+df['distance'] = [haversine(df['longitude_d'][i], df['latitude_d'][i], df['longitude_o'][i], df['latitude_o'][i]) for i in range(len(df))]
+print 'done distances!'
+
 
 df.ix[df['Value'] == '*', 'Value'] = '1'
 df.ix[df['distance'] == np.nan, 'Value'] = '0'
@@ -84,25 +91,29 @@ df.ix[df['distance'] == np.nan, 'Value'] = '0'
 
 #------------------------------------------------------------------------------
 # choose several origins
-df_temp = df.loc[(df['Origin'] == 'VIET NAM') | 
-        (df['Origin'] == 'PALESTINIAN') | 
-        (df['Origin'] == 'AFGHANISTAN') |
-        (df['Origin'] == 'UGANDA') |
-        (df['Origin'] == 'SUDAN')]
+df_temp = df.loc[(df['Origin'] == 'VIET NAM') ]#| 
+#        (df['Origin'] == 'PALESTINIAN') | 
+#        (df['Origin'] == 'AFGHANISTAN') |
+#        (df['Origin'] == 'UGANDA') |
+#        (df['Origin'] == 'SUDAN')]
 df_temp.ix[df_temp['Value'] == '*', 'Value'] = '1'
 # reformatting and cleanup
 
 df_temp['Value'] = pd.to_numeric(df_temp['Value'], errors='coerce')
 #df_temp['Value'] = df_temp['Value'].fillna(1)
 
+print 'doing df2'
 #http://stackoverflow.com/questions/26777832/replicating-rows-in-a-pandas-data-frame-by-a-column-value
 df_temp2 = df_temp.loc[np.repeat(df_temp.index.values, pd.to_numeric(df_temp['Value']))]
 #df_temp2 = df_temp
 #for i in range(len(df_temp)):
 #    df_temp2=df_temp2.append(df_temp.iloc[i,:]*pd.to_numeric(df_temp[i,:]))
-
+print 'done df2'
 
 # make a violinplot, plotting by origin
 sns.violinplot(x=df_temp2['Origin'].astype(str), y=pd.to_numeric(df_temp2['distance']), data=df_temp2, palette="Set3", bw=.2, cut=1, linewidth=1)
+
+
+sns.violinplot(x=df_temp2['year'].astype(str), y=pd.to_numeric(df_temp2['distance']), data=df_temp2, palette="Set3", bw=.2, cut=1, linewidth=1)
 
 # no result for vietnam and palestine....seems to be bc string mismatch when performing merge
