@@ -1,5 +1,5 @@
 # unhcr_distances
-which refugees resettle furthest?
+which refugees resettle furthest? and which refugees seek safety closer to home?
 
 link to dataset: [link](http://popstats.unhcr.org/en/resettlement)
 
